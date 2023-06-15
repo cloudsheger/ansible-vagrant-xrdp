@@ -1,0 +1,14 @@
+---
+    - name: Install EPEL repository
+      become: true  # Run the task with root privileges
+      dnf:
+        name: epel-release
+        state: present
+  
+    - name: Install GNOME command line
+      become: true
+      dnf:
+        name:
+          - gnome-terminal
+          - gnome-session
+        state: present

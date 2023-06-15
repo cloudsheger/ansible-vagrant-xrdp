@@ -1,0 +1,52 @@
+- name: remove existing Docker packages
+  become: true
+  dnf:
+    name:
+      - docker
+      - docker-client
+      - docker-client-latest
+      - docker-common
+      - docker-latest
+      - docker-latest-logrotate
+      - docker-logrotate
+      - docker-engine
+      - podman 
+      - containers-common
+    state: absent
+
+- name: enable docker repository
+  get_url:
+    url: https://download.docker.com/linux/centos/docker-ce.repo
+    dest: /etc/yum.repos.d/docker-ce.repo
+    mode: '0644'
+  become: true
+
+- name: install docker
+  dnf:
+    name:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+    state: present
+  become: true
+
+- name: install docker compose
+  get_url:
+    url:  https://github.com/docker/compose/releases/download/v2.18.1/docker-compose-linux-x86_64
+    dest: /usr/local/bin/docker-compose
+    mode: '0755'
+  become: true
+
+- name: add user to docker group
+  user:
+    name: "{{ ansible_user_id }}"
+    groups: docker
+    append: true
+  become: true
+
+- name: start and enable docker on boot
+  service:
+    name: docker
+    state: started
+    enabled: true
+  become: true

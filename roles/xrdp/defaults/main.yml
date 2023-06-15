@@ -1,2 +1,3 @@
 ---
 # defaults file for xrdp
+system_user: docker

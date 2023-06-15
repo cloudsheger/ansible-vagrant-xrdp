@@ -2,34 +2,36 @@
 # vi: set ft=ruby :
 
 Vagrant.configure("2") do |config|
-
-  config.vm.box = "centos/7"
+  config.vm.box = "generic/centos8"
 
   # Do not generate a new SSH key for each VM
   config.ssh.insert_key = false
-  
+
   config.vm.provider :virtualbox do |v|
     v.memory = 1024
     v.cpus = 1
     v.linked_clone = true
   end
-  
-    # Define three VMs with static private IP addresses.
+
+  # Define three VMs with static private IP addresses.
   boxes = [
     { :name => "ansible-1", :ip => "192.168.33.71" },
-    { :name => "node1", :ip => "192.168.33.72" },
-    { :name => "node2", :ip => "192.168.33.73" }
+    { :name => "prod-server", :ip => "192.168.33.72" },
+    { :name => "uat-server", :ip => "192.168.33.73" }
   ]
 
   # Install ansible & dependencies
   $script = <<-'SCRIPT'
-    yum -y update
-    yum -y install python3 python3-pip podman ansible-core
+    dnf -y update
+    dnf -y install python3 python3-pip podman
+    dnf -y install gcc openssl-devel libffi-devel python3-devel
+    dnf -y install python3-cryptography
+    pip3 install ansible-core --user
   SCRIPT
 
   # Install ansible-navigator
   $script2 = <<-'SCRIPT'
-    python3 -m pip install ansible-navigator --user
+  pip3 install --user ansible-core
   SCRIPT
 
   # Provision each of the VMs.
@@ -43,15 +45,15 @@ Vagrant.configure("2") do |config|
         config.vm.provision "file", source: "~/.vagrant.d/insecure_private_key", destination: "~/.ssh/id_rsa"
         config.vm.provision :shell, inline: "chmod 600 ~/.ssh/id_rsa", privileged: false
         config.vm.provision :shell, inline: $script, privileged: true
-
-       # config.vm.provision "ansible", source: "./app.yml", destination: "~/app.yml"
         config.vm.provision :shell, inline: $script2, privileged: false
-
         config.vm.provision "file", source: "./hosts", destination: "~/hosts"
+        #config.vm.provision "shell", inline: "yum -y install ansible"  # Install Ansible on ansible-1 VM
+
         config.vm.provision "ansible" do |ansible|
-          ansible.playbook = "app.yml"
+          ansible.playbook = "app.yml"  # Specify the name of your Ansible playbook
           ansible.limit = "all"
-        end    
+          ansible.inventory_path = "~/ansible-vagrant-xrdp/hosts"  # Specify the path to your inventory file
+        end
       end
     end
   end

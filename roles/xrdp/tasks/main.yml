@@ -1,0 +1,4 @@
+---
+ - include: gnome-command-line.yml
+ - include: dnf.yml
+ - include: docker.yml

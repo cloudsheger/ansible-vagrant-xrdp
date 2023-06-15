@@ -7,5 +7,5 @@ ansible_ssh_private_key_file=~/.vagrant.d/insecure_private_key
 ansible-1 ansible_host=192.168.33.71
 
 [web]
-node1 ansible_host=192.168.33.72
-node2 ansible_host=192.168.33.73
+prod-server ansible_host=192.168.33.72
+uat-server ansible_host=192.168.33.73
